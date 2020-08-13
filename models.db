@@ -1,0 +1,95 @@
+from django.db import models
+from django_mysql.models import JSONField,Model
+import datetime
+
+# Create your models here.
+class Subject(models.Model):
+    subjectId=models.AutoField(primary_key=True)
+    subjectName=models.CharField(max_length=100)    
+    class Meta:
+        db_table='Subject_Table'
+
+
+class Year(models.Model):
+    yearId=models.AutoField(primary_key=True)
+    yearName=models.CharField(max_length=30)
+    def __str__(self):
+        return self.yearName
+    class Meta:
+        db_table="Year_Table"
+
+
+class Semester(models.Model):
+    semesterId=models.AutoField(primary_key=True)
+    semesterName=models.CharField(max_length=30)
+    def __str__(self):
+        return self.semesterName
+    class Meta:
+        db_table="Semester_Table"
+
+class Section(models.Model):
+    sectionId=models.AutoField(primary_key=True)
+    sectionName=models.CharField(max_length=1)
+    def __str__(self):
+        return self.sectionName
+    class Meta:
+        db_table="Section_Table"
+
+class Class(models.Model):
+    classId=models.AutoField(primary_key=True)
+    section=models.ForeignKey(Section,on_delete=models.CASCADE)
+    year=models.ForeignKey(Year,on_delete=models.CASCADE)
+    semester=models.ForeignKey(Semester,on_delete=models.CASCADE)
+    subject=models.ManyToManyField(Subject)
+    class Meta:
+        db_table="Class_Table"
+
+class Professor(models.Model):
+    professorId=models.AutoField(primary_key=True)
+    fname=models.CharField(max_length=30)
+    lname=models.CharField(max_length=30)
+    email=models.EmailField(max_length=30)
+    mobile=models.CharField(max_length=10)
+    city=models.CharField(max_length=20)
+    state=models.CharField(max_length=30)
+    subject=models.ManyToManyField(Subject)
+    def __str__(self):
+        return self.email
+    class Meta:
+        db_table="Professor_Table" 
+
+class Department(models.Model):
+    departmentId=models.AutoField(primary_key=True)
+    departmentName=models.CharField(max_length=100)
+    hod=models.OneToOneField(Professor,null=True,on_delete=models.SET_NULL)
+    
+    def __self__(self):
+        return self.departmentName
+    class Meta:
+        db_table="Department_Table"
+
+  
+    
+
+class Student(models.Model):
+    studentId=models.AutoField(primary_key=True)
+    registerationNo=models.CharField(max_length=10,unique=True)
+    fname=models.CharField(max_length=30)
+    lname=models.CharField(max_length=30)
+    email=models.EmailField(max_length=50)
+    mobile=models.CharField(max_length=10)
+    city=models.CharField(max_length=20)
+    state=models.CharField(max_length=30)
+    department=models.ForeignKey(Department,null=True,on_delete=models.SET_NULL)       
+    class_data=models.ForeignKey(Class,null=True,on_delete=models.SET_NULL)    
+    def __str__(self):
+        return self.email
+    class Meta:
+        db_table="Student_Table"  
+
+class StudentAttendance(Model,models.Model):
+    attendanceId=models.AutoField(primary_key=True)
+    student=models.ForeignKey(Student,on_delete=models.CASCADE)
+    date=models.DateField(default=datetime.date.today)
+    time=models.TimeField(default=datetime.time())    
+    attendance=JSONField()
